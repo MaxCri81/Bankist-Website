@@ -18,7 +18,7 @@ overlay.addEventListener('click', closeModal);
 // attach the event listener to the all page for a key pressed
 document.addEventListener('keydown', function (event) {
   // if the key Escape is pressed and the modal window doesn't have the class hidden
-  // (the modal window is shown) then the closeModalWindow function is called
+  // (meaning the modal window is shown) then the closeModalWindow function is called
   if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
     closeModal();
   }
