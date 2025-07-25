@@ -8,7 +8,8 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 // Smooth scrolling
 const btnScrollTo = document.querySelector(".btn--scroll-to");
 const section1 = document.getElementById("section--1");
-
+// ul nav links
+const navLinks = document.querySelector(".nav__links");
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
@@ -24,6 +25,9 @@ document.addEventListener('keydown', closeModalEscape);
 
 // attach the event listener to the Learn more button
 btnScrollTo.addEventListener("click", sectionOneScroll);
+
+// attach the event listener to the ul nav links
+navLinks.addEventListener("click", smoothScroll);
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -53,8 +57,25 @@ function closeModal() {
 };
 
 /** Scroll the page to section 1 with smooth behaviour */
-function sectionOneScroll() {
+function sectionOneScroll(event) {
   section1.scrollIntoView({behavior: "smooth"});
+};
+
+/**
+ * Implements smooth scrolling for navigation links. An event listener is attached 
+ * to the parent element with the class nav__link. When a link is clicked, the target 
+ * section is identified dynamically, and the page scrolls smoothly to that section.
+ * @param {Object} event - PointerEvent returned from navLinks event listener 
+ */
+function smoothScroll(event) {
+  event.preventDefault();
+  // since the event listener is attached to the all bar, we need to make sure
+  // the click is generated within the link itself, and not in the space within links
+  if (event.target.classList.contains("nav__link")) {
+    // event.target = where the event happens
+    const id = event.target.getAttribute("href");
+    document.querySelector(id).scrollIntoView({behavior: "smooth"});
+  };
 };
 
 
