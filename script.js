@@ -10,6 +10,10 @@ const btnScrollTo = document.querySelector(".btn--scroll-to");
 const section1 = document.getElementById("section--1");
 // ul nav links
 const navLinks = document.querySelector(".nav__links");
+// Tabbed components
+const tabs = document.querySelectorAll(".operations__tab");
+const tabsContainer = document.querySelector(".operations__tab-container");
+const tabsContent = document.querySelectorAll(".operations__content");
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
@@ -28,6 +32,9 @@ btnScrollTo.addEventListener("click", sectionOneScroll);
 
 // attach the event listener to the ul nav links
 navLinks.addEventListener("click", smoothScroll);
+
+// attach the event listener to the parent container of the tabs
+tabsContainer.addEventListener("click", showTabsContent);
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -78,4 +85,21 @@ function smoothScroll(event) {
   };
 };
 
+/**
+ * Show the tab content according to the clicked tab button
+ * @param {Object} event - PointerEvent returned from tabsContainer event listener 
+ * @returns null
+ */
+function showTabsContent(event) {
+  // select the tab whenever the user click the tab itself or the span within it.
+  const tabClicked = event.target.closest(".operations__tab");
+  if (!tabClicked) return; // avoid returning null when clicking nearby the tab
 
+  // remove the active class
+  tabs.forEach(tab => tab.classList.remove("operations__tab--active")); 
+  tabsContent.forEach(tabContent => tabContent.classList.remove("operations__content--active")); 
+
+  // add the active class
+  tabClicked.classList.add("operations__tab--active"); 
+  document.querySelector(`.operations__content--${tabClicked.dataset.tab}`).classList.add("operations__content--active");
+};
