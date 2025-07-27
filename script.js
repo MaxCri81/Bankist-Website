@@ -18,6 +18,18 @@ const tabsContainer = document.querySelector(".operations__tab-container");
 const tabsContent = document.querySelectorAll(".operations__content");
 
 const header = document.querySelector(".header");
+const allSections = document.querySelectorAll("section");
+/************************************************************************** Intersection Observer Objects **********************************************************/
+const headerObsOptions = {
+  root: null, // target = viewport 
+  threshold: 0, // event is triggered when reached the 0% of the intersectionRatio
+  rootMargin: `-${navHeigth}px`, // the height of the nav is added as margin on top of the threshold
+};
+
+const sectionObsOptions = {
+  root: null, 
+  threshold: 0.15, 
+};
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
@@ -44,6 +56,9 @@ tabsContainer.addEventListener("click", showTabsContent);
 // nav.addEventListener("mouseover", (event) => fadeMenu(event, 0.5)); // without bind
 nav.addEventListener("mouseover", fadeMenu.bind(0.5));
 nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new function which it will return 'this' = 1 in this case
+
+// attach an observer to all the sections
+allSections.forEach(section => attachObserver(section));
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -133,13 +148,6 @@ function fadeMenu(event) {
   };
 };
 
-// Intersection Observer API object
-const observerOptions = {
-  root: null, // target = viewport 
-  threshold: 0, // event is triggered when reached the 0% of the intersectionRatio
-  rootMargin: `-${navHeigth}px`, // the height of the nav is added as margin on top of the threshold
-};
-
 /**
  * Make the navigation bar sticky after scrolling past the header section
  * @param {Object} entries - IntersectionObserverEntry returned from the IntersectionObserver
@@ -149,4 +157,26 @@ function stickyNav(entries) {
   if (!entry.isIntersecting) nav.classList.add("sticky"); // when the observer is not intersecting with the header
   else nav.classList.remove("sticky"); // when the observer is intersecting with the header
 };
-new IntersectionObserver(stickyNav, observerOptions).observe(header);
+
+/**
+ * Display the sections once they are scrolled into view.
+ * @param {Object} entries -  IntersectionObserverEntry returned from the forEach below
+ * @param {Object} observer - IntersectionObserver returned from the forEach below
+ * @returns null
+ */
+function revealSection(entries, observer) {
+  const [entry] = entries;
+  if (!entry.isIntersecting) return;
+  entry.target.classList.remove("section--hidden"); // show the section
+  observer.unobserve(entry.target); // remove the observer once the section is intersected
+};
+new IntersectionObserver(stickyNav, headerObsOptions).observe(header);
+
+/**
+ * Hide all sections and attach an observer to each section
+ * @param {Object} section - HTML section element
+ */
+function attachObserver(section) {
+  section.classList.add("section--hidden");
+  new IntersectionObserver(revealSection, sectionObsOptions).observe(section);
+};
