@@ -8,15 +8,16 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 // Smooth scrolling
 const btnScrollTo = document.querySelector(".btn--scroll-to");
 const section1 = document.getElementById("section--1");
-// Nav links
-const navLinks = document.querySelector(".nav__links");
 // Nav bar
 const nav = document.querySelector(".nav");
+const navHeigth = nav.getBoundingClientRect().height; // nav height in px relative to the viewport
+const navLinks = document.querySelector(".nav__links");
 // Tabbed components
 const tabs = document.querySelectorAll(".operations__tab");
 const tabsContainer = document.querySelector(".operations__tab-container");
 const tabsContent = document.querySelectorAll(".operations__content");
 
+const header = document.querySelector(".header");
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
@@ -42,7 +43,7 @@ tabsContainer.addEventListener("click", showTabsContent);
 // attach the event listener to the nav bar
 // nav.addEventListener("mouseover", (event) => fadeMenu(event, 0.5)); // without bind
 nav.addEventListener("mouseover", fadeMenu.bind(0.5));
-nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new function which will return 'this' = 1 in this case
+nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new function which it will return 'this' = 1 in this case
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -131,3 +132,21 @@ function fadeMenu(event) {
     logo.style.opacity = this;
   };
 };
+
+// Intersection Observer API object
+const observerOptions = {
+  root: null, // target = viewport 
+  threshold: 0, // event is triggered when reached the 0% of the intersectionRatio
+  rootMargin: `-${navHeigth}px`, // the height of the nav is added as margin on top of the threshold
+};
+
+/**
+ * Make the navigation bar sticky after scrolling past the header section
+ * @param {Object} entries - IntersectionObserverEntry returned from the IntersectionObserver
+ */
+function stickyNav(entries) {
+  const [entry] = entries; // take the first element of entries
+  if (!entry.isIntersecting) nav.classList.add("sticky"); // when the observer is not intersecting with the header
+  else nav.classList.remove("sticky"); // when the observer is intersecting with the header
+};
+new IntersectionObserver(stickyNav, observerOptions).observe(header);
