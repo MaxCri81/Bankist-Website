@@ -8,12 +8,15 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 // Smooth scrolling
 const btnScrollTo = document.querySelector(".btn--scroll-to");
 const section1 = document.getElementById("section--1");
-// ul nav links
+// Nav links
 const navLinks = document.querySelector(".nav__links");
+// Nav bar
+const nav = document.querySelector(".nav");
 // Tabbed components
 const tabs = document.querySelectorAll(".operations__tab");
 const tabsContainer = document.querySelector(".operations__tab-container");
 const tabsContent = document.querySelectorAll(".operations__content");
+
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
@@ -35,6 +38,11 @@ navLinks.addEventListener("click", smoothScroll);
 
 // attach the event listener to the parent container of the tabs
 tabsContainer.addEventListener("click", showTabsContent);
+
+// attach the event listener to the nav bar
+// nav.addEventListener("mouseover", (event) => fadeMenu(event, 0.5)); // without bind
+nav.addEventListener("mouseover", fadeMenu.bind(0.5));
+nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new function which will return 'this' = 1 in this case
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -102,4 +110,24 @@ function showTabsContent(event) {
   // add the active class
   tabClicked.classList.add("operations__tab--active"); 
   document.querySelector(`.operations__content--${tabClicked.dataset.tab}`).classList.add("operations__content--active");
+};
+
+/**
+ * Fade the navigation bar when hovering over it.
+ * The 'this' is binded to the opacity value according to the mouse event, see Event handlers.
+ * @param {Object} event - PointerEvent returned from the nav event listener (mouseover and mouseout)
+ */
+function fadeMenu(event) {
+  if (event.target.classList.contains("nav__link")) {
+    // Select all elements in the nav bar
+    const link = event.target;
+    const siblings = nav.querySelectorAll(".nav__link");
+    const logo = nav.querySelector(".nav__logo");
+
+    // Fade the elements
+    siblings.forEach(element => {
+      if (element !== link) element.style.opacity = this;
+    });
+    logo.style.opacity = this;
+  };
 };
