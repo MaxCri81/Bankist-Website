@@ -20,16 +20,22 @@ const tabsContent = document.querySelectorAll(".operations__content");
 const header = document.querySelector(".header");
 const allSections = document.querySelectorAll("section");
 /************************************************************************** Intersection Observer Objects **********************************************************/
-const headerObsOptions = {
+const headerObsOptions = new IntersectionObserver(stickyNav, {
   root: null, // target = viewport 
   threshold: 0, // event is triggered when reached the 0% of the intersectionRatio
   rootMargin: `-${navHeigth}px`, // the height of the nav is added as margin on top of the threshold
-};
+});
+headerObsOptions.observe(header);
 
-const sectionObsOptions = {
+const sectionObsOptions = new IntersectionObserver(revealSection, {
   root: null, 
   threshold: 0.15, 
-};
+});
+
+const linkObserver = new IntersectionObserver(linksColor, {
+  root: null,
+  threshold: 0.25,
+});
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
@@ -57,7 +63,7 @@ tabsContainer.addEventListener("click", showTabsContent);
 nav.addEventListener("mouseover", fadeMenu.bind(0.5));
 nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new function which it will return 'this' = 1 in this case
 
-// attach an observer to all the sections
+// attach observers to all the sections
 allSections.forEach(section => attachObserver(section));
 /********************************************************************************* Functions ***************************************************************************/
 /**
@@ -160,23 +166,44 @@ function stickyNav(entries) {
 
 /**
  * Display the sections once they are scrolled into view.
- * @param {Object} entries -  IntersectionObserverEntry returned from the forEach below
+ * @param {Object} sections - IntersectionObserverEntry returned from the forEach below
  * @param {Object} observer - IntersectionObserver returned from the forEach below
  * @returns null
  */
-function revealSection(entries, observer) {
-  const [entry] = entries;
-  if (!entry.isIntersecting) return;
-  entry.target.classList.remove("section--hidden"); // show the section
-  observer.unobserve(entry.target); // remove the observer once the section is intersected
+function revealSection(sections, observer) {
+  sections.forEach(section => {
+
+  if (!section.isIntersecting) return;
+  section.target.classList.remove("section--hidden"); // show the section
+  observer.unobserve(section.target); // remove the observer once the section is intersected
+  });
 };
-new IntersectionObserver(stickyNav, headerObsOptions).observe(header);
 
 /**
- * Hide all sections and attach an observer to each section
+ * Change the color of the links according to the corresponding intersected section
+ * @param {Object} sections - IntersectionObserverEntry returned from the forEach below
+ */
+function linksColor(sections) {
+  sections.forEach(section => {
+    const sectionId = section.target.id;
+    const link = document.querySelector(`.nav__link[href="#${sectionId}"]`);
+    // when a section is intersected
+    if (section.isIntersecting) {
+      // if the link is not the open account button, then change the color for the corresponding link
+      if (!link.classList.contains("nav__link--btn")) link.style.color = "var(--color-primary)";
+    }
+    else link.style.color = ""; // restore the default color
+  });
+};
+
+/**
+ * Hide all sections and attach 2 observers, 1 to each section to reveal 
+ * the sections and 1 to change the nav links color, as sections are intersected.
  * @param {Object} section - HTML section element
  */
 function attachObserver(section) {
   section.classList.add("section--hidden");
-  new IntersectionObserver(revealSection, sectionObsOptions).observe(section);
+  sectionObsOptions.observe(section);
+  linkObserver.observe(section);
 };
+
