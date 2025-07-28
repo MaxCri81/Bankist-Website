@@ -19,15 +19,17 @@ const tabsContent = document.querySelectorAll(".operations__content");
 
 const header = document.querySelector(".header");
 const allSections = document.querySelectorAll("section");
+// Lazy loading images
+const imgTargets = document.querySelectorAll("img[data-src]");
 /************************************************************************** Intersection Observer Objects **********************************************************/
-const headerObsOptions = new IntersectionObserver(stickyNav, {
+const headerObserver = new IntersectionObserver(stickyNav, {
   root: null, // target = viewport 
   threshold: 0, // event is triggered when reached the 0% of the intersectionRatio
   rootMargin: `-${navHeigth}px`, // the height of the nav is added as margin on top of the threshold
 });
-headerObsOptions.observe(header);
+headerObserver.observe(header);
 
-const sectionObsOptions = new IntersectionObserver(revealSection, {
+const sectionObserver = new IntersectionObserver(revealSection, {
   root: null, 
   threshold: 0.15, 
 });
@@ -35,6 +37,12 @@ const sectionObsOptions = new IntersectionObserver(revealSection, {
 const linkObserver = new IntersectionObserver(linksColor, {
   root: null,
   threshold: 0.25,
+});
+
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null,
+   threshold: 0,
+   rootMargin: "200px", // the effect fires before the user can notice it
 });
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
@@ -65,6 +73,9 @@ nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new functi
 
 // attach observers to all the sections
 allSections.forEach(section => attachObserver(section));
+
+// attach observer to all the imgTargets
+imgTargets.forEach(img => imgObserver.observe(img));
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -166,8 +177,8 @@ function stickyNav(entries) {
 
 /**
  * Display the sections once they are scrolled into view.
- * @param {Object} sections - IntersectionObserverEntry returned from the forEach below
- * @param {Object} observer - IntersectionObserver returned from the forEach below
+ * @param {Object} sections - IntersectionObserverEntry returned from the forEach
+ * @param {Object} observer - IntersectionObserver returned from the forEach
  * @returns null
  */
 function revealSection(sections, observer) {
@@ -181,7 +192,7 @@ function revealSection(sections, observer) {
 
 /**
  * Change the color of the links according to the corresponding intersected section
- * @param {Object} sections - IntersectionObserverEntry returned from the forEach below
+ * @param {Object} sections - IntersectionObserverEntry returned from the forEach
  */
 function linksColor(sections) {
   sections.forEach(section => {
@@ -203,7 +214,25 @@ function linksColor(sections) {
  */
 function attachObserver(section) {
   section.classList.add("section--hidden");
-  sectionObsOptions.observe(section);
+  sectionObserver.observe(section);
   linkObserver.observe(section);
+};
+
+/**
+ * Remove the blur filter from the image as they are intersected and change the 
+ * image src from low to high resolution (path stored in data-src).
+ * @param {Object} entry - IntersectionObserverEntry returned from the forEach
+ * @param {Object} observer - IntersectionObserver returned from the forEach
+ * @returns 
+ */
+function loadImg(entry, observer) {
+  const [image] = entry;
+  if (!image.isIntersecting) return;
+  // Replace src with data-src -> initially src = low res, data-src = high res
+  image.target.src = image.target.dataset.src;
+  // Remove the 'lazy-img' class only when the loading of the image is complete
+  // to avoid showing the low resolution image that was initially assigned to src
+  image.target.addEventListener("load", ()=> image.target.classList.remove("lazy-img"));
+  observer.unobserve(image.target); // remove the observer once the image is loaded
 };
 
