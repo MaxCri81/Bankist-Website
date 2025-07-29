@@ -16,29 +16,37 @@ const navLinks = document.querySelector(".nav__links");
 const tabs = document.querySelectorAll(".operations__tab");
 const tabsContainer = document.querySelector(".operations__tab-container");
 const tabsContent = document.querySelectorAll(".operations__content");
-
+// Intersection Observer constants
 const header = document.querySelector(".header");
 const allSections = document.querySelectorAll("section");
 // Lazy loading images
 const imgTargets = document.querySelectorAll("img[data-src]");
+// Slider
+const slider = document.querySelector(".slider");
+const slides = document.querySelectorAll(".slide");
+const btnLeft = document.querySelector(".slider__btn--left");
+const btnRight = document.querySelector(".slider__btn--right");
+let currentSlideIndex = 0; // index of the image currently displaying in the slider
+const maxSlide = slides.length; // number of images in the slider
 /************************************************************************** Intersection Observer Objects **********************************************************/
+// Nav Intersection Object
 const headerObserver = new IntersectionObserver(stickyNav, {
   root: null, // target = viewport 
   threshold: 0, // event is triggered when reached the 0% of the intersectionRatio
   rootMargin: `-${navHeigth}px`, // the height of the nav is added as margin on top of the threshold
 });
 headerObserver.observe(header);
-
+// Sections Intersection Object
 const sectionObserver = new IntersectionObserver(revealSection, {
   root: null, 
   threshold: 0.15, 
 });
-
+// Links Intersection Object
 const linkObserver = new IntersectionObserver(linksColor, {
   root: null,
   threshold: 0.25,
 });
-
+// Lazy image Intersection Object
 const imgObserver = new IntersectionObserver(loadImg, {
   root: null,
    threshold: 0,
@@ -47,35 +55,32 @@ const imgObserver = new IntersectionObserver(loadImg, {
 /**************************************************************************** Event handlers ************************************************************************/
 // attach the event listener to the 2 buttons 'btn--show-modal'
 btnsOpenModal.forEach(button => button.addEventListener('click', openModal));
-
 // attach the event listener to the close button in the modal window
 btnCloseModal.addEventListener('click', closeModal);
-
 // attach the event listener to hide the overlay background
 overlay.addEventListener('click', closeModal);
-
 // attach the event listener to the all page for a key pressed
 document.addEventListener('keydown', closeModalEscape);
-
 // attach the event listener to the Learn more button
 btnScrollTo.addEventListener("click", sectionOneScroll);
-
 // attach the event listener to the ul nav links
 navLinks.addEventListener("click", smoothScroll);
-
 // attach the event listener to the parent container of the tabs
 tabsContainer.addEventListener("click", showTabsContent);
-
 // attach the event listener to the nav bar
 // nav.addEventListener("mouseover", (event) => fadeMenu(event, 0.5)); // without bind
 nav.addEventListener("mouseover", fadeMenu.bind(0.5));
 nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new function which it will return 'this' = 1 in this case
-
 // attach observers to all the sections
 allSections.forEach(section => attachObserver(section));
-
 // attach observer to all the imgTargets
 imgTargets.forEach(img => imgObserver.observe(img));
+// Move the slides to the right with translateX.
+goToSlide();
+// attach the event listener to the slide right button
+btnRight.addEventListener("click", slideRight);
+// attach the event listener to the slide left button
+btnLeft.addEventListener("click", slideLeft);
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -236,3 +241,23 @@ function loadImg(entry, observer) {
   observer.unobserve(image.target); // remove the observer once the image is loaded
 };
 
+/** Move the slide to the right */
+function slideRight() {
+  if (currentSlideIndex === maxSlide -1) currentSlideIndex = 0;
+  else currentSlideIndex ++; // Increment the image index to display   
+  // move all the images accordingly to the currentSlideIndex
+  goToSlide();
+};
+
+/** Move the slides to the left */
+function slideLeft() {
+  if (currentSlideIndex === 0) currentSlideIndex = maxSlide -1;
+  else currentSlideIndex --; // Increment the image index to display   
+  // move all the images accordingly to the currentSlideIndex
+  goToSlide();
+};
+
+/** Move the slides with translateX. Each image is moved at position 100 * (image index - index of the image to show), accordingly */
+function goToSlide(){
+  slides.forEach((slide, index)=> slide.style.transform = `translateX(${100 * (index - currentSlideIndex)}%)`);
+};
