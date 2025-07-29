@@ -26,6 +26,7 @@ const slider = document.querySelector(".slider");
 const slides = document.querySelectorAll(".slide");
 const btnLeft = document.querySelector(".slider__btn--left");
 const btnRight = document.querySelector(".slider__btn--right");
+const dotContainer = document.querySelector(".dots");
 let currentSlideIndex = 0; // index of the image currently displaying in the slider
 const maxSlide = slides.length; // number of images in the slider
 /************************************************************************** Intersection Observer Objects **********************************************************/
@@ -75,12 +76,18 @@ nav.addEventListener("mouseout",  fadeMenu.bind(1)); // bind return a new functi
 allSections.forEach(section => attachObserver(section));
 // attach observer to all the imgTargets
 imgTargets.forEach(img => imgObserver.observe(img));
-// Move the slides to the right with translateX.
-goToSlide();
 // attach the event listener to the slide right button
 btnRight.addEventListener("click", slideRight);
 // attach the event listener to the slide left button
 btnLeft.addEventListener("click", slideLeft);
+// attach the event listener to the slide buttons for a key pressed
+document.addEventListener('keydown', slideKeyPressed);
+// attach the event listener to the dot buttons
+dotContainer.addEventListener("click", dotSliding);
+// Create the dots
+createDot();
+// Move the slides to the right with translateX.
+goToSlide();
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -260,4 +267,42 @@ function slideLeft() {
 /** Move the slides with translateX. Each image is moved at position 100 * (image index - index of the image to show), accordingly */
 function goToSlide(){
   slides.forEach((slide, index)=> slide.style.transform = `translateX(${100 * (index - currentSlideIndex)}%)`);
+  activeDot();
+};
+
+/** Create dot elements */
+function createDot() {
+  slides.forEach((_, index)=> {
+    dotContainer.insertAdjacentHTML("beforeend", 
+      `<button class="dots__dot" data-slide="${index}"></button>`)
+  });
+};
+
+/**
+ * Slide the current image to the corresponding dot selected
+ * @param {Object} event - IntersectionObserverEntry returned from the dotContainer listener
+ * @returns null
+ */
+function dotSliding(event) {
+  if (!event.target.classList.contains("dots__dot")) return;
+  // assign the dataset number from the clicked dot to the currentSlideIndex
+  currentSlideIndex = Number(event.target.dataset.slide);
+  // slide the current image to the current selected
+  goToSlide();
+};
+
+/** Add the active class corresponding to the image is currently displaying */
+function activeDot() {
+  let dotIndex;
+  const active = "dots__dot--active";
+  document.querySelectorAll(".dots__dot").forEach(dot => {
+    dotIndex = Number(dot.dataset.slide);
+    dotIndex === currentSlideIndex ? dot.classList.add(active) : dot.classList.remove(active);
+  });
+};
+
+/** Slide images to the left or right accordingly when pressed the left or right keyboard button */
+function slideKeyPressed(event){
+  if (event.key === "ArrowLeft") slideLeft(); // with if statement
+  event.key === "ArrowRight" && slideRight(); // with short circuiting
 };
