@@ -29,6 +29,9 @@ const btnRight = document.querySelector(".slider__btn--right");
 const dotContainer = document.querySelector(".dots");
 let currentSlideIndex = 0; // index of the image currently displaying in the slider
 const maxSlide = slides.length; // number of images in the slider
+// Create Slider Constructor
+const sliderObject = new Slider();
+sliderObject.init(); // initializes Slider methods
 /************************************************************************** Intersection Observer Objects **********************************************************/
 // Nav Intersection Object
 const headerObserver = new IntersectionObserver(stickyNav, {
@@ -77,17 +80,13 @@ allSections.forEach(section => attachObserver(section));
 // attach observer to all the imgTargets
 imgTargets.forEach(img => imgObserver.observe(img));
 // attach the event listener to the slide right button
-btnRight.addEventListener("click", slideRight);
-// attach the event listener to the slide left button
-btnLeft.addEventListener("click", slideLeft);
+btnRight.addEventListener("click", sliderObject.slideRight.bind(sliderObject));
+// // attach the event listener to the slide left button
+btnLeft.addEventListener("click", sliderObject.slideLeft.bind(sliderObject));
 // attach the event listener to the slide buttons for a key pressed
-document.addEventListener('keydown', slideKeyPressed);
+document.addEventListener('keydown', sliderObject.slideKeyPressed.bind(sliderObject));
 // attach the event listener to the dot buttons
-dotContainer.addEventListener("click", dotSliding);
-// Create the dots
-createDot();
-// Move the slides to the right with translateX.
-goToSlide();
+dotContainer.addEventListener("click", sliderObject.dotSliding.bind(sliderObject));
 /********************************************************************************* Functions ***************************************************************************/
 /**
  * When 'Escaped' key is pressed closeModal is called.
@@ -248,61 +247,68 @@ function loadImg(entry, observer) {
   observer.unobserve(image.target); // remove the observer once the image is loaded
 };
 
-/** Move the slide to the right */
-function slideRight() {
-  if (currentSlideIndex === maxSlide -1) currentSlideIndex = 0;
-  else currentSlideIndex ++; // Increment the image index to display   
-  // move all the images accordingly to the currentSlideIndex
-  goToSlide();
-};
+/** Slider Constructor Object */
+function Slider() {
+  /** Initialize the slider */
+  this.init = function() {
+    this.createDot();
+    this.goToSlide();
+  };
 
-/** Move the slides to the left */
-function slideLeft() {
-  if (currentSlideIndex === 0) currentSlideIndex = maxSlide -1;
-  else currentSlideIndex --; // Increment the image index to display   
-  // move all the images accordingly to the currentSlideIndex
-  goToSlide();
-};
+  /** Create dot elements */
+  this.createDot = function() {
+    slides.forEach((_, index)=> {
+      dotContainer.insertAdjacentHTML("beforeend", `<button class="dots__dot" data-slide="${index}"></button>`)})
+  };
 
-/** Move the slides with translateX. Each image is moved at position 100 * (image index - index of the image to show), accordingly */
-function goToSlide(){
-  slides.forEach((slide, index)=> slide.style.transform = `translateX(${100 * (index - currentSlideIndex)}%)`);
-  activeDot();
-};
+  /** Add the active class corresponding to the image is currently displaying */
+  this.activeDot = function() {
+    let dotIndex;
+    const active = "dots__dot--active";
+    document.querySelectorAll(".dots__dot").forEach(dot => {
+      dotIndex = Number(dot.dataset.slide);
+      dotIndex === currentSlideIndex ? dot.classList.add(active) : dot.classList.remove(active);
+    });
+  };
 
-/** Create dot elements */
-function createDot() {
-  slides.forEach((_, index)=> {
-    dotContainer.insertAdjacentHTML("beforeend", 
-      `<button class="dots__dot" data-slide="${index}"></button>`)
-  });
-};
+  /**
+   * Slide the current image to the corresponding dot selected
+   * @param {Object} event - IntersectionObserverEntry returned from the dotContainer listener
+   * @returns null
+   */
+  this.dotSliding = function(event) {
+    if (!event.target.classList.contains("dots__dot")) return;
+    // assign the dataset number from the clicked dot to the currentSlideIndex
+    currentSlideIndex = Number(event.target.dataset.slide);
+    // slide the current image to the current selected
+    this.goToSlide();
+  };
 
-/**
- * Slide the current image to the corresponding dot selected
- * @param {Object} event - IntersectionObserverEntry returned from the dotContainer listener
- * @returns null
- */
-function dotSliding(event) {
-  if (!event.target.classList.contains("dots__dot")) return;
-  // assign the dataset number from the clicked dot to the currentSlideIndex
-  currentSlideIndex = Number(event.target.dataset.slide);
-  // slide the current image to the current selected
-  goToSlide();
-};
+  /** Move the slides with translateX. Each image is moved at position 100 * (image index - index of the image to show), accordingly */
+  this.goToSlide = function() {
+    slides.forEach((slide, index)=> slide.style.transform = `translateX(${100 * (index - currentSlideIndex)}%)`);
+    this.activeDot();
+  };
 
-/** Add the active class corresponding to the image is currently displaying */
-function activeDot() {
-  let dotIndex;
-  const active = "dots__dot--active";
-  document.querySelectorAll(".dots__dot").forEach(dot => {
-    dotIndex = Number(dot.dataset.slide);
-    dotIndex === currentSlideIndex ? dot.classList.add(active) : dot.classList.remove(active);
-  });
-};
+  /** Move the slides to the left */
+  this.slideLeft = function() {
+    if (currentSlideIndex === 0) currentSlideIndex = maxSlide -1;
+    else currentSlideIndex --; // Increment the image index to display   
+    // move all the images accordingly to the currentSlideIndex
+    this.goToSlide();
+  };
 
-/** Slide images to the left or right accordingly when pressed the left or right keyboard button */
-function slideKeyPressed(event){
-  if (event.key === "ArrowLeft") slideLeft(); // with if statement
-  event.key === "ArrowRight" && slideRight(); // with short circuiting
+  /** Move the slide to the right */
+  this.slideRight = function() {
+    if (currentSlideIndex === maxSlide -1) currentSlideIndex = 0;
+    else currentSlideIndex ++; // Increment the image index to display   
+    // move all the images accordingly to the currentSlideIndex
+    this.goToSlide();
+  };
+
+  /** Slide images to the left or right accordingly when pressed the left or right keyboard button */
+  this.slideKeyPressed = function(event) {
+    if (event.key === "ArrowLeft") this.slideLeft(); // with if statement
+    event.key === "ArrowRight" && this.slideRight(); // with short circuiting
+  };
 };
