@@ -9,6 +9,4 @@ https://github.com/user-attachments/assets/07b7d286-716d-4664-b649-7358662eee32
 
 
 
-The project comes from a Udemy course.
-
-JavaScript code written by Massimiliano Crisafulli.
+The project originated from a course. I developed the app based on the course material and implemented several enhancements to improve its functionality and overall user experience.
